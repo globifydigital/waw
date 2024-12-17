@@ -28,21 +28,8 @@ class HomeTab extends ConsumerStatefulWidget {
 class _HomeTabState extends ConsumerState<HomeTab> {
 
   List<VideoPlayerController> _controllers = [];
+  List<VideoPlayerController> _controllersWatchedVideos = [];
 
-  final List<String> videoUrls = [
-    'https://www.youtube.com/watch?v=3UeaPkLBdmc',
-    'https://www.youtube.com/watch?v=xzkZWjwt5vw',
-  ];
-
-  final List<String> recentlyViewedVideoUrls = [
-    'https://www.youtube.com/watch?v=xTpv9lc_qMw',
-    'https://www.youtube.com/watch?v=Dr_8tvQjY9M',
-    'https://www.youtube.com/watch?v=-nG5enxw100',
-    'https://www.youtube.com/watch?v=xzkZWjwt5vw',
-
-  ];
-
-  final int _holdDuration = 60;
 
   bool _showloader = false;
   late Timer _timer;
@@ -100,7 +87,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     _videoDurationMap[index] = videoDuration.inSeconds.toDouble();
     _isPressingMap[index] = true;
     _progressMap[index] = 0.0;
-    _pressStartTimeMap[index] = DateTime.now(); // Record press start time
+    _pressStartTimeMap[index] = DateTime.now(); 
   }
 
   String _formatRemainingTime(double remainingSeconds) {
@@ -157,6 +144,16 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     Future.wait(_controllers.map((controller) => controller.initialize())).then((_) {
       setState(() {});
     });
+    await ref.read(videoListProvider).getAllWatchedVideos("9562826851");
+    final watchedVideoProvider = ref.watch(videoListProvider);
+    final allWatchedVideosListShowing = watchedVideoProvider.allWatchedVideosListState;
+    for(int i=0; i<allWatchedVideosListShowing.length; i++){
+      String videoUrl = allWatchedVideosListShowing[i].video!.video.toString();
+      _controllersWatchedVideos.add(VideoPlayerController.network("https://wawapp.globify.in/public/storage/$videoUrl"));
+    }
+    Future.wait(_controllersWatchedVideos.map((controller) => controller.initialize())).then((_) {
+      setState(() {});
+    });
   }
 
 
@@ -177,11 +174,11 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     final videoProvider = ref.watch(videoListProvider);
     final allVideosListShowing = videoProvider.allVideosListState;
+    final allWatchedVideosListShowing = videoProvider.allWatchedVideosListState;
     return Scaffold(
       backgroundColor: screenBackgroundColor,
       appBar: AppBar(
@@ -271,13 +268,20 @@ class _HomeTabState extends ConsumerState<HomeTab> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text("Ad posted : ${allVideosListShowing[index].date}  ${convertTo12HourFormat(allVideosListShowing[index].time.toString())}", style: GoogleFonts.poppins(fontSize: 8, color: Colors.white, fontWeight: FontWeight.w500),),
-                            Text("${allVideosListShowing[index].videoTimeDuration} sec", style: GoogleFonts.poppins(fontSize: 9, color: Colors.yellow, fontWeight: FontWeight.w500),),
+                            Text("${_controllers[index].value.duration.inSeconds.toDouble()} sec", style: GoogleFonts.poppins(fontSize: 9, color: Colors.yellow, fontWeight: FontWeight.w500),),
                           ],
                         ),
-                        Gap(5),
-                        AspectRatio(
-                          aspectRatio: controller.value.aspectRatio,
-                          child: VideoPlayer(controller),
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.28,
+                          width: double.infinity,
+                          child: FittedBox(
+                            fit: BoxFit.fill,
+                            child: SizedBox(
+                              width: controller.value.size.width,
+                              height: controller.value.size.height,
+                              child: VideoPlayer(controller),
+                            ),
+                          ),
                         ),
                         SizedBox(height: 10),
                         Gap(10),
@@ -332,7 +336,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
                               glowCount: 2,
                               glowRadiusFactor: 0.2,
                               glowShape: BoxShape.circle,
-                              child: Material(
+                              child: const Material(
                                 elevation: 8.0,
                                 shape: CircleBorder(),
                                 child: CircleAvatar(
@@ -379,12 +383,12 @@ class _HomeTabState extends ConsumerState<HomeTab> {
                 ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: recentlyViewedVideoUrls.length,
+                  itemCount: allWatchedVideosListShowing.length,
                   itemBuilder: (context, index) {
-                    String videoId = YoutubePlayer.convertUrlToId(recentlyViewedVideoUrls[index])!;
+                    VideoPlayerController controller = _controllersWatchedVideos[index];
                     return GestureDetector(
                       onTap: (){
-                        _showVideoPopup(context);
+                        _showVideoPopup(context, _controllersWatchedVideos[index]);
                       },
                       child: Container(
                         margin: EdgeInsets.only(bottom: 10),
@@ -402,24 +406,17 @@ class _HomeTabState extends ConsumerState<HomeTab> {
                           children: [
                             SizedBox(
                                 width: MediaQuery.of(context).size.width * 0.6,
-                                child: Text("New mango flavour KitKat extra pack", style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w300, fontSize: 13),)),
+                                child: Text(allWatchedVideosListShowing[index].video!.title.toString(), style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w300, fontSize: 13),)),
                             SizedBox(
-                              height: 60,
+                              height: MediaQuery.of(context).size.height * 0.06,
                               width: MediaQuery.of(context).size.width * 0.2,
-                              child: YoutubePlayer(
-                                controller: YoutubePlayerController(
-                                  initialVideoId: videoId,
-                                  flags: const YoutubePlayerFlags(
-                                    autoPlay: false,
-                                    mute: false,
-                                    isLive: false,
-                                    forceHD: true,
-                                  ),
+                              child: FittedBox(
+                                fit: BoxFit.fill,
+                                child: SizedBox(
+                                  width: controller.value.size.width,
+                                  height: controller.value.size.height,
+                                  child: VideoPlayer(controller),
                                 ),
-                                showVideoProgressIndicator: true,
-                                onReady: () {
-                                  // Additional setup if needed
-                                },
                               ),
                             ),
                           ],
@@ -761,19 +758,19 @@ class _HomeTabState extends ConsumerState<HomeTab> {
   }
 
 
-  void _showVideoPopup(BuildContext context) {
-    String videoId = YoutubePlayer.convertUrlToId(videoUrls[0])!;
+  void _showVideoPopup(BuildContext context, VideoPlayerController controller) {
 
-    // Create the controller for YoutubePlayer
-    YoutubePlayerController _controller = YoutubePlayerController(
-      initialVideoId: videoId,
-      flags: YoutubePlayerFlags(
-        autoPlay: false,
-        mute: false,
-        isLive: false,
-        forceHD: true,
-      ),
-    );
+    if (!controller.value.isInitialized) {
+      controller.initialize().then((_) {
+        setState(() {
+          controller.play();
+        });
+      });
+    } else {
+      setState(() {
+        controller.play();
+      });
+    }
 
     // Show a dialog with the video player
     showDialog(
@@ -791,20 +788,18 @@ class _HomeTabState extends ConsumerState<HomeTab> {
               children: [
                 // Video Player
                 Expanded(
-                  child: YoutubePlayer(
-                    controller: _controller,
-                    showVideoProgressIndicator: true,
-                    onReady: () {
-                      _controller.play();
-                    },
+                  child: AspectRatio(
+                    aspectRatio: controller.value.aspectRatio,
+                    child: VideoPlayer(controller),
                   ),
                 ),
                 // Close Button
                 IconButton(
                   icon: Icon(Icons.close, color: Colors.white),
                   onPressed: () {
-                    _controller.dispose(); // Dispose of the controller when closing
-                    Navigator.of(context).pop(); // Close the dialog
+                    controller.seekTo(Duration.zero);
+                    controller.pause();
+                    Navigator.of(context).pop();
                   },
                 ),
               ],

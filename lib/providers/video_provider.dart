@@ -2,6 +2,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:waw/models/user/user_details_model.dart';
+import 'package:waw/models/videos/all_watched_videos_model.dart';
 
 import '../../rest/rest_client_provider.dart';
 import '../models/videos/all_videos_model.dart';
@@ -19,8 +20,10 @@ class VideoListProvider extends ChangeNotifier {
 
 
   List<AllVideosListModel> _allVideosList = [];
+  List<AllWatchedVideosList> _allWatchedVideosList = [];
 
   List<AllVideosListModel> get allVideosListState => _allVideosList;
+  List<AllWatchedVideosList> get allWatchedVideosListState => _allWatchedVideosList;
 
   Future<AllVideos> getAllVideos() async {
     try {
@@ -49,6 +52,31 @@ class VideoListProvider extends ChangeNotifier {
     }
   }
 
+  Future<AllWatchedVideos> getAllWatchedVideos(String mobNo) async {
+    try {
+      final map = {
+        "mob_no": mobNo,
+      };
+      final response = await _restClient.getAllWatchedVideos(map);
+      if (kDebugMode) {
+        print("API Response: $response");
+      }
+
+      final allWatchedVideos = AllWatchedVideos.fromJson(response);
+
+      _allWatchedVideosList = allWatchedVideos.data ?? [];
+      notifyListeners();
+
+      return allWatchedVideos;
+    } catch (e, stackTrace) {
+      // Log the error details
+      if (kDebugMode) {
+        print("Error occurred: $e");
+        print("StackTrace: $stackTrace");
+      }
+      return AllWatchedVideos(data: []);
+    }
+  }
 
 
 }

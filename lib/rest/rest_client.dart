@@ -15,4 +15,7 @@ abstract class RestClient {
 
   @GET('/get-video-list')
   Future<dynamic> getAllVideos();
+
+  @GET('/get-watched-video?')
+  Future<dynamic> getAllWatchedVideos(@Body() Map<String, dynamic> body);
 }
