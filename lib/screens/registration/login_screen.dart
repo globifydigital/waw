@@ -10,6 +10,7 @@ import 'package:waw/theme/colors.dart';
 import '../../gen/assets.gen.dart';
 import 'package:iconsax/iconsax.dart';
 
+import '../../providers/user_login_provider.dart';
 import '../../rest/hive_repo.dart';
 import '../../widgets/login_button.dart';
 
@@ -153,7 +154,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       showActions: false,
                       title: "Sign In",
                       onPressed: (){
-                        _login();
+                        // _login();
                       },
                     ),
                     Gap(60),
@@ -192,19 +193,41 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     );
   }
 
-  Future<void> _login() async {
-    if (!_formKey.currentState!.validate()) return;
-    // setState(() {
-    //   submitting = true;
-    // });
-    context.pushRoute(DashboardRoute());
-    try {
-
-    } catch (e) {
-      // ignore: use_build_context_synchronously
-    }
-    // setState(() {
-    //   submitting = false;
-    // });
-  }
+  // Future<void> _login() async {
+  //   if (!_formKey.currentState!.validate()) return;
+  //   // setState(() {
+  //   //   submitting = true;
+  //   // });
+  //
+  //   try {
+  //     var userDetails = await ref.read(userDetailsProvider).registerUser(
+  //       name: "0",
+  //       mob_no: _userName.text,
+  //       whatsapp_no: _password.text,
+  //       email: departmentId.toString(),
+  //       address: departmentId.toString(),
+  //       location: departmentId.toString(),
+  //       image: departmentId.toString(),
+  //     );
+  //     if(userDetails != null){
+  //       HiveRepo.instance.user = userDetails;
+  //       userNameStored = "";
+  //       passwordStored = "";
+  //       context.pushRoute(HomeRoute());
+  //     }else{
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text('Please check your username or password'),
+  //           duration: Duration(milliseconds: 600),),
+  //       );
+  //     }
+  //
+  //     // ignore: use_build_context_synchronously
+  //     // Navigator.pop(context);
+  //   } catch (e) {
+  //     // ignore: use_build_context_synchronously
+  //   }
+  //   // setState(() {
+  //   //   submitting = false;
+  //   // });
+  // }
 }

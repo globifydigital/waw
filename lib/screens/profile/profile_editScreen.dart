@@ -1,33 +1,29 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:auto_route/annotations.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:waw/routes/app_router.gr.dart';
-import 'package:waw/theme/colors.dart';
-import '../../gen/assets.gen.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:waw/theme/colors.dart';
 
-import '../../providers/user_login_provider.dart';
-import '../../rest/hive_repo.dart';
+import '../../routes/app_router.gr.dart';
 import '../../widgets/login_button.dart';
+import '../../widgets/profile_shimmer_view.dart';
+
 
 @RoutePage()
-class SignUpScreen extends ConsumerStatefulWidget {
-  const SignUpScreen({super.key});
+class ProfileEditScreen extends StatefulWidget {
+  const ProfileEditScreen({super.key});
 
   @override
-  ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
+  State<ProfileEditScreen> createState() => _ProfileEditScreenState();
 }
 
-class _SignUpScreenState extends ConsumerState<SignUpScreen> {
-
-
+class _ProfileEditScreenState extends State<ProfileEditScreen> {
   File? _image;
 
   final _formKey = GlobalKey<FormState>();
@@ -39,22 +35,202 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
 
   String? _selectedDistrict;
-  final List<String> districts = [
-    'Thiruvananthapuram',
-    'Kollam',
-    'Pathanamthitta',
-    'Alappuzha',
-    'Kottayam',
-    'Idukki',
-    'Ernakulam',
-    'Thrissur',
-    'Palakkad',
-    'Malappuram',
-    'Kozhikode',
-    'Wayanad',
-    'Kannur',
-    'Kasaragod',
+  final List<String> countries = [
+    'Afghanistan',
+    'Albania',
+    'Algeria',
+    'Andorra',
+    'Angola',
+    'Antigua and Barbuda',
+    'Argentina',
+    'Armenia',
+    'Australia',
+    'Austria',
+    'Azerbaijan',
+    'Bahamas',
+    'Bahrain',
+    'Bangladesh',
+    'Barbados',
+    'Belarus',
+    'Belgium',
+    'Belize',
+    'Benin',
+    'Bhutan',
+    'Bolivia',
+    'Bosnia and Herzegovina',
+    'Botswana',
+    'Brazil',
+    'Brunei',
+    'Bulgaria',
+    'Burkina Faso',
+    'Burundi',
+    'Cabo Verde',
+    'Cambodia',
+    'Cameroon',
+    'Canada',
+    'Central African Republic',
+    'Chad',
+    'Chile',
+    'China',
+    'Colombia',
+    'Comoros',
+    'Congo (Congo-Brazzaville)',
+    'Costa Rica',
+    'Croatia',
+    'Cuba',
+    'Cyprus',
+    'Czechia (Czech Republic)',
+    'Denmark',
+    'Djibouti',
+    'Dominica',
+    'Dominican Republic',
+    'Ecuador',
+    'Egypt',
+    'El Salvador',
+    'Equatorial Guinea',
+    'Eritrea',
+    'Estonia',
+    'Eswatini (fmr. "Swaziland")',
+    'Ethiopia',
+    'Fiji',
+    'Finland',
+    'France',
+    'Gabon',
+    'Gambia',
+    'Georgia',
+    'Germany',
+    'Ghana',
+    'Greece',
+    'Grenada',
+    'Guatemala',
+    'Guinea',
+    'Guinea-Bissau',
+    'Guyana',
+    'Haiti',
+    'Holy See',
+    'Honduras',
+    'Hungary',
+    'Iceland',
+    'India',
+    'Indonesia',
+    'Iran',
+    'Iraq',
+    'Ireland',
+    'Israel',
+    'Italy',
+    'Jamaica',
+    'Japan',
+    'Jordan',
+    'Kazakhstan',
+    'Kenya',
+    'Kiribati',
+    'Kuwait',
+    'Kyrgyzstan',
+    'Laos',
+    'Latvia',
+    'Lebanon',
+    'Lesotho',
+    'Liberia',
+    'Libya',
+    'Liechtenstein',
+    'Lithuania',
+    'Luxembourg',
+    'Madagascar',
+    'Malawi',
+    'Malaysia',
+    'Maldives',
+    'Mali',
+    'Malta',
+    'Marshall Islands',
+    'Mauritania',
+    'Mauritius',
+    'Mexico',
+    'Micronesia',
+    'Moldova',
+    'Monaco',
+    'Mongolia',
+    'Montenegro',
+    'Morocco',
+    'Mozambique',
+    'Myanmar (formerly Burma)',
+    'Namibia',
+    'Nauru',
+    'Nepal',
+    'Netherlands',
+    'New Zealand',
+    'Nicaragua',
+    'Niger',
+    'Nigeria',
+    'North Korea',
+    'North Macedonia',
+    'Norway',
+    'Oman',
+    'Pakistan',
+    'Palau',
+    'Palestine State',
+    'Panama',
+    'Papua New Guinea',
+    'Paraguay',
+    'Peru',
+    'Philippines',
+    'Poland',
+    'Portugal',
+    'Qatar',
+    'Romania',
+    'Russia',
+    'Rwanda',
+    'Saint Kitts and Nevis',
+    'Saint Lucia',
+    'Saint Vincent and the Grenadines',
+    'Samoa',
+    'San Marino',
+    'Sao Tome and Principe',
+    'Saudi Arabia',
+    'Senegal',
+    'Serbia',
+    'Seychelles',
+    'Sierra Leone',
+    'Singapore',
+    'Slovakia',
+    'Slovenia',
+    'Solomon Islands',
+    'Somalia',
+    'South Africa',
+    'South Korea',
+    'South Sudan',
+    'Spain',
+    'Sri Lanka',
+    'Sudan',
+    'Suriname',
+    'Sweden',
+    'Switzerland',
+    'Syria',
+    'Tajikistan',
+    'Tanzania',
+    'Thailand',
+    'Timor-Leste',
+    'Togo',
+    'Tonga',
+    'Trinidad and Tobago',
+    'Tunisia',
+    'Turkey',
+    'Turkmenistan',
+    'Tuvalu',
+    'Uganda',
+    'Ukraine',
+    'United Arab Emirates',
+    'United Kingdom',
+    'United States of America',
+    'Uruguay',
+    'Uzbekistan',
+    'Vanuatu',
+    'Venezuela',
+    'Vietnam',
+    'Yemen',
+    'Zambia',
+    'Zimbabwe',
   ];
+
 
   Future<void> _pickImage() async {
     final ImagePicker _picker = ImagePicker();
@@ -69,30 +245,24 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   }
 
   @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-  }
-
-  _SignUpScreenState();
-
-  @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      backgroundColor: screenBackgroundColor,
       appBar: AppBar(
-          backgroundColor: screenBackgroundColor,
-          toolbarHeight: 0.0
+        automaticallyImplyLeading: false,
+        leading: GestureDetector(
+            onTap: () => context.pushRoute(DashboardRoute(bottomIndex: 3)),
+            child: const Icon(Icons.arrow_back_ios_new, color: Colors.white,size: 25,)),
+        title: Text("Edit Profile", style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),),
       ),
       body: SafeArea(
         child: Container(
           padding: const EdgeInsets.all(15.0),
           decoration: const BoxDecoration(
-            color: screenBackgroundColor
+              color: screenBackgroundColor
             // gradient: LinearGradient(
             //     begin: Alignment.topLeft,
             //     end: Alignment.bottomRight,
@@ -111,8 +281,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 padding: EdgeInsets.only(bottom: keyboardHeight),
                 child: Column(
                   children: [
-                    Gap(80),
-                    Text("Sign Up", style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold)),
                     Gap(40),
                     GestureDetector(
                       onTap: () async {
@@ -411,7 +579,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                       ),
-                      items: districts.map((district) {
+                      items: countries.map((district) {
                         return DropdownMenuItem<String>(
                           value: district,
                           child: Text(
@@ -439,9 +607,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     Gap(40),
                     LoginButton(
                       showActions: false,
-                      title: "Sign Up",
+                      title: "Save",
                       onPressed: (){
-                        _login();
+                        // _login();
                       },
                     ),
                     Gap(60),
@@ -478,41 +646,5 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         ),
       ),
     );
-  }
-
-  Future<void> _login() async {
-    if (!_formKey.currentState!.validate()) return;
-    // setState(() {
-    //   submitting = true;
-    // });
-
-    try {
-      var userDetails = await ref.read(userDetailsProvider).registerUser(
-        name: _name.text,
-        mob_no: _mobile.text,
-        whatsapp_no: _mobileWhatsp.text,
-        email: _email.toString(),
-        address: _address.toString(),
-        location: "1",
-        image: "",
-      );
-      if(userDetails != null){
-        HiveRepo.instance.user = userDetails;
-        context.pushRoute(DashboardRoute(bottomIndex: 0));
-      }else{
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please check your username or password'),
-            duration: Duration(milliseconds: 600),),
-        );
-      }
-
-      // ignore: use_build_context_synchronously
-      // Navigator.pop(context);
-    } catch (e) {
-      // ignore: use_build_context_synchronously
-    }
-    // setState(() {
-    //   submitting = false;
-    // });
   }
 }

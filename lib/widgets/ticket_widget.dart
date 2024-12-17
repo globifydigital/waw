@@ -73,7 +73,7 @@ class TicketWidget extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                "01-00013-00085459",
+                                "01-00013-00782024",
                                 style: GoogleFonts.poppins(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,

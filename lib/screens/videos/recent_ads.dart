@@ -47,8 +47,8 @@ class _RecentAdsScreenState extends State<RecentAdsScreen> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         leading: GestureDetector(
-            onTap: () => context.pushRoute(DashboardRoute()),
-            child: Icon(Icons.arrow_back_ios_new, color: Colors.white,size: 25,)),
+            onTap: () => context.pushRoute(DashboardRoute(bottomIndex: 0)),
+            child: const Icon(Icons.arrow_back_ios_new, color: Colors.white,size: 25,)),
         title: Text("Recent Ads", style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),),
       ),
       body: Padding(

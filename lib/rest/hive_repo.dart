@@ -3,8 +3,10 @@ import 'dart:io';
 
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:waw/models/user/user_details_model.dart';
 
 const String _baseUrl = 'baseURL';
+const String _infoScreen = 'infoScreen';
 const String _user = 'user';
 const String _departmentId = 'departmentId';
 const String _roleId = 'roleId';
@@ -47,8 +49,15 @@ class HiveRepo {
     setRoleIdValue(value);
   }
 
+  setInfoScreenWatched({String? value}) {
+    setRoleIdValue(value);
+  }
+
   Future<void> setDepartmentIdValue(String? value) async =>
       _box.put(_departmentId, value);
+
+  Future<void> setInfoScreenWatchedValue(String? value) async =>
+      _box.put(_infoScreen, value);
 
   Future<void> setRoleIdValue(String? value) async =>
       _box.put(_roleId, value);
@@ -61,6 +70,8 @@ class HiveRepo {
   String? getDepartmentId() => _box.get(_departmentId) as String?;
 
   String? getRoleId() => _box.get(_roleId) as String?;
+
+  String? getInfoScreenValue() => _box.get(_roleId) as String?;
 
   setTokens({String? accessToken, String? refreshToken}) {
     setAccessToken(accessToken);
@@ -76,23 +87,23 @@ class HiveRepo {
 
   String? getRefreshToken() => _box.get(_refreshToken) as String?;
 
-  // set user(UserLoginModel? user) => _box.put(_user, jsonEncode(user));
-  //
-  //
-  // UserLoginModel? get user {
-  //   try {
-  //     final user = UserLoginModel.fromJson(
-  //       jsonDecode(_box.get(_user)),
-  //     );
-  //     if (user.oList!.isEmpty) {
-  //       return null;
-  //     } else {
-  //       return user;
-  //     }
-  //   } catch (e) {
-  //     return null;
-  //   }
-  // }
+  set user(UserDetails? user) => _box.put(_user, jsonEncode(user));
+
+
+  UserDetails? get user {
+    try {
+      final user = UserDetails.fromJson(
+        jsonDecode(_box.get(_user)),
+      );
+      if (user == null) {
+        return null;
+      } else {
+        return user;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
 
   // String get userName => user?.oList[0]. ?? 'default';
 

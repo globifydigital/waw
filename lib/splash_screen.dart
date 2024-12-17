@@ -17,18 +17,19 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>  with TickerProviderStateMixin{
 
   bool _isVisible = false;
+  String infoScreenValue = "";
 
   @override
   void initState() {
     super.initState();
-    HiveRepo.instance.setBaseUrl(baseUrl: "http://49.50.79.12:74/");
+    HiveRepo.instance.setBaseUrl(baseUrl: "https://wawapp.globify.in/public/api");
+    infoScreenValue = HiveRepo.instance.getInfoScreenValue() ?? "";
     Timer(const Duration(seconds: 2), () {
-      // if(HiveRepo.instance.user == null){
-      //   context.router.replace(SignInRoute(departmentValue: "", departmentId: ""));
-      // }else{
-      //   context.router.replace(const DashboardRoute());
-      // }
-      context.router.replace(const SignInRoute());
+      if(infoScreenValue == "watched"){
+        context.router.replace(DashboardRoute(bottomIndex: 0));
+      }else{
+        context.router.replace(const AppInformationRoute());
+      }
     });
     Future.delayed(Duration(milliseconds: 100), () {
       setState(() {
