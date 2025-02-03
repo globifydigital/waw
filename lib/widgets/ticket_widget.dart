@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+
+import '../models/user/individual_user_model.dart';
 
 class TicketWidget extends StatelessWidget {
+  final UserModel userModel;
+  TicketWidget({Key? key, required this.userModel}) : super(key: key);
   @override
   Widget build(BuildContext context) {
+    final user = userModel.data;
     return CustomPaint(
       painter: TicketPainter(),
       child: Padding(
@@ -19,7 +25,7 @@ class TicketWidget extends StatelessWidget {
             children: [
               Container(
                 height: double.infinity,
-                width: MediaQuery.of(context).size.width * 0.2,
+                width: MediaQuery.of(context).size.width * 0.15,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.only(
@@ -29,11 +35,10 @@ class TicketWidget extends StatelessWidget {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
-                  child: Image.asset(
-                    "assets/images/barcodedemoimage.png",
-                    fit: BoxFit.cover,
-                    width: MediaQuery.of(context).size.width * 0.09,
-                    height: MediaQuery.of(context).size.height * 0.03,
+                  child: Center(
+                    child: QrImageView(
+                      data: user!.coupenNo.toString(),
+                    ),
                   ),
                 ),
               ),
@@ -73,7 +78,7 @@ class TicketWidget extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                "01-00013-00782024",
+                                  user!.coupenNo ?? "XXXXXXXXXXXXXXX",
                                 style: GoogleFonts.poppins(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -89,26 +94,32 @@ class TicketWidget extends StatelessWidget {
                         children: [
                           CircleAvatar(
                             radius: MediaQuery.of(context).size.width * 0.05,
-                            backgroundImage: AssetImage("assets/images/personimage.jpg"),
+                            backgroundImage: NetworkImage(
+                              "https://wawapp.globify.in/storage/app/public/${user.image.toString()}",
+                            ),
                             backgroundColor: Colors.transparent,
                           ),
                           SizedBox(width: 10),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'User @121324234',
+                              Text(user.name.toString(),
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              Text(
-                                'Trivandrum, Technocity 123',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 12,
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.5,
+                                child: Text(
+                                  user.address.toString(),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ),
                             ],
@@ -130,7 +141,7 @@ class TicketWidget extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                '22:07',
+                                user.totalWatchTime.toString(),
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 16,
@@ -140,7 +151,7 @@ class TicketWidget extends StatelessWidget {
                             ],
                           ),
                           Text(
-                            '304 POINTS',
+                            '${user.userPoints.toString()} POINTS',
                             style: TextStyle(
                               color: Colors.amber,
                               fontSize: 18,

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "700024768139",
+    "project_id": "wawapp-f3b60",
+    "storage_bucket": "wawapp-f3b60.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:700024768139:android:b7d9e61d426906c2c1768e",
+        "android_client_info": {
+          "package_name": "com.globify.waw"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAar3wPv1n9nc-MaUiCuz77Dm8BXNVpr8Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

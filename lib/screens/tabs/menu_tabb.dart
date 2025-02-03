@@ -1,12 +1,9 @@
-
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:waw/rest/hive_repo.dart';
 import 'package:waw/theme/colors.dart';
-import '../../providers/video_provider.dart';
 import '../../routes/app_router.gr.dart';
 import '../../widgets/profile_shimmer_view.dart';
 
@@ -44,107 +41,147 @@ class _MenuTabState extends ConsumerState<MenuTab> with SingleTickerProviderStat
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(
-                child:CircleAvatar(
+                child : (HiveRepo.instance.user!=null)?CircleAvatar(
                   radius: MediaQuery.of(context).size.width * 0.1,
-                  backgroundImage: AssetImage("assets/images/personimage.jpg"),
-                  backgroundColor: Colors.transparent,
-                ),
+                  backgroundImage: NetworkImage("https://wawapp.globify.in/storage/app/public/${HiveRepo.instance.user!.data!.image}"),
+                  backgroundColor: Colors.grey.shade100,
+                ): CircleAvatar(
+                  radius: MediaQuery.of(context).size.width * 0.1,
+                  backgroundColor: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: ClipOval(
+                      child: Image.asset(
+                        "assets/images/personprofile.png",
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                )
               ),
               Gap(15),
-              Center(child: Text("User@121232", style: GoogleFonts.poppins(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),)),
+              Center(child: Text((HiveRepo.instance.user != null) ? HiveRepo.instance.user!.data!.name.toString() : "", style: GoogleFonts.poppins(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),)),
               Gap(2),
-              Center(child: Text("9874562130", style: GoogleFonts.poppins(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),)),
+              Center(child: Text((HiveRepo.instance.user != null) ? HiveRepo.instance.user!.data!.mobNo.toString() : "", style: GoogleFonts.poppins(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),)),
               Gap(25),
               GestureDetector(
                 onTap: ()=> context.pushRoute(ProfileRoute()),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.person, color: Colors.white54,),
-                        SizedBox(width: 10),
-                        Text("Profile", style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),),
-                      ],
-                    ),
-                    Icon(Icons.arrow_forward_ios, color: Colors.white54,size: 18,)
-                  ],
+                child: Container(
+                  height: 40,
+                  color: Colors.transparent,
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.person, color: Colors.white54,),
+                          SizedBox(width: 10),
+                          Text("Profile", style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),),
+                        ],
+                      ),
+                      Icon(Icons.arrow_forward_ios, color: Colors.white54,size: 18,)
+                    ],
+                  ),
                 ),
               ),
-              Gap(25),
+              Gap(10),
               GestureDetector(
                 onTap: ()=> context.pushRoute(NotificationsRoute(bottomIndex: 3)),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.notifications, color: Colors.white54,),
-                        SizedBox(width: 10),
-                        Text("Notifications", style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),),
-                      ],
-                    ),
-                    Icon(Icons.arrow_forward_ios, color: Colors.white54,size: 18,)
-                  ],
+                child: Container(
+                  height: 40,
+                  color: Colors.transparent,
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.notifications, color: Colors.white54,),
+                          const SizedBox(width: 10),
+                          Text("Notifications", style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),),
+                        ],
+                      ),
+                      Icon(Icons.arrow_forward_ios, color: Colors.white54,size: 18,)
+                    ],
+                  ),
                 ),
               ),
-              Gap(25),
+              Gap(10),
               GestureDetector(
-                onTap: ()=> context.pushRoute(AboutUsRoute()),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Image.asset("assets/images/aboutusiconimage.png", height: 20, color: Colors.white54,),
-                        SizedBox(width: 10),
-                        Text("About Us", style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),),
-                      ],
-                    ),
-                    Icon(Icons.arrow_forward_ios, color: Colors.white54,size: 18,)
-                  ],
+                onTap: () => context.pushRoute(AboutUsRoute()),
+                child: Container(
+                  height: 40,
+                  color: Colors.transparent,
+                 width: double.infinity,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Image.asset("assets/images/aboutusiconimage.png", height: 20, color: Colors.white54),
+                          SizedBox(width: 10),
+                          Text(
+                            "About Us",
+                            style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
+                      Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 18),
+                    ],
+                  ),
                 ),
               ),
-              Gap(25),
+              Gap(10),
               GestureDetector(
                 onTap: ()=> context.pushRoute(PrivacyPolicyRoute()),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Row(
-                          children: [
-                            Image.asset("assets/images/privacypolicyiconimage.png", height: 20, color: Colors.white54,),
-                            SizedBox(width: 10),
-                            Text("Privacy Policy", style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Icon(Icons.arrow_forward_ios, color: Colors.white54,size: 18,)
-                  ],
+                child: Container(
+                  height: 40,
+                  color: Colors.transparent,
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Row(
+                            children: [
+                              Image.asset("assets/images/privacypolicyiconimage.png", height: 20, color: Colors.white54,),
+                              SizedBox(width: 10),
+                              Text("Privacy Policy", style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Icon(Icons.arrow_forward_ios, color: Colors.white54,size: 18,)
+                    ],
+                  ),
                 ),
               ),
-              Gap(25),
+              Gap(10),
               GestureDetector(
                 onTap: ()=> context.pushRoute(TermsAndConditionRoute()),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Image.asset("assets/images/termsandconditioniconimage.png", height: 20, color: Colors.white54,),
-                        SizedBox(width: 10),
-                        Text("Terms & Conditions", style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),),
-                      ],
-                    ),
-                    Icon(Icons.arrow_forward_ios, color: Colors.white54,size: 18,)
-                  ],
+                child: Container(
+                  height: 40,
+                  color: Colors.transparent,
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Image.asset("assets/images/termsandconditioniconimage.png", height: 20, color: Colors.white54,),
+                          SizedBox(width: 10),
+                          Text("Terms & Conditions", style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),),
+                        ],
+                      ),
+                      Icon(Icons.arrow_forward_ios, color: Colors.white54,size: 18,)
+                    ],
+                  ),
                 ),
               ),
-              Gap(40),
-              GestureDetector(
+              Gap(30),
+              if(HiveRepo.instance.user != null)GestureDetector(
                 onTap: (){
                   _showSuccessDialog();
                 },
@@ -153,9 +190,9 @@ class _MenuTabState extends ConsumerState<MenuTab> with SingleTickerProviderStat
                   children: [
                     Row(
                       children: [
-                        Image.asset("assets/images/logouticonimage.png", height: 20, color: Colors.white54,),
+                        Image.asset("assets/images/logouticonimage.png", height: 20, color: Colors.amber,),
                         SizedBox(width: 10),
-                        Text("Logout", style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),),
+                        Text("Logout", style: GoogleFonts.poppins(color: Colors.amber, fontSize: 16, fontWeight: FontWeight.w500),),
                       ],
                     ),
                   ],
@@ -220,17 +257,20 @@ class _MenuTabState extends ConsumerState<MenuTab> with SingleTickerProviderStat
                                 color: Colors.transparent,
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: Colors.white24, // Set the border color
-                                  width: 1, // Set the border width
+                                  color: Colors.white54,
+                                  width: 1,
                                 ),
                               ),
                               child: Center(
-                                child: Text("No", style: GoogleFonts.poppins(color: Colors.white24),),
+                                child: Text("No", style: GoogleFonts.poppins(color: Colors.white54),),
                               ),
                             ),
                           ),
                           GestureDetector(
-                            onTap: () => context.pushRoute(DashboardRoute(bottomIndex: 0)),
+                            onTap: () {
+                              HiveRepo.instance.logout();
+                              context.pushRoute(DashboardRoute(bottomIndex: 0));
+                            },
                             child: Container(
                               width: MediaQuery.of(context).size.width * 0.3,
                               height: MediaQuery.of(context).size.height * 0.045,
@@ -238,12 +278,12 @@ class _MenuTabState extends ConsumerState<MenuTab> with SingleTickerProviderStat
                                 color: Colors.transparent,
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: Colors.white24, // Set the border color
-                                  width: 1, // Set the border width
+                                  color: Colors.white54,
+                                  width: 1,
                                 ),
                               ),
                               child: Center(
-                                child: Text("Yes", style: GoogleFonts.poppins(color: Colors.white24),),
+                                child: Text("Yes", style: GoogleFonts.poppins(color: Colors.white54),),
                               ),
                             ),
                           ),

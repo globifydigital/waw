@@ -2,40 +2,53 @@ import 'dart:convert';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:http/http.dart' as http;
+import '../../models/season/season_list_model.dart';
+import '../../providers/season_provider.dart';
 import '../../routes/app_router.gr.dart';
 import '../../theme/colors.dart';
 import '../../widgets/profile_shimmer_view.dart';
 
 
-class DrawTab extends StatefulWidget {
+class DrawTab extends ConsumerStatefulWidget {
   const DrawTab({super.key});
 
   @override
-  State<DrawTab> createState() => _DrawTabState();
+  ConsumerState<DrawTab> createState() => _DrawTabState();
 }
 
-class _DrawTabState extends State<DrawTab> {
+class _DrawTabState extends ConsumerState<DrawTab> {
 
   late YoutubePlayerController _controller;
+  late List<YoutubePlayerController> _controllers = [];
   bool _isControlsVisible = true;
   String id = "qVuSgK86qFw";
 
+  fetchData() async {
+    setState(() {
+      loading = false;
+    });
 
-  final List<String> videoUrls = [
-    'https://www.youtube.com/watch?v=3UeaPkLBdmc',
-    'https://www.youtube.com/watch?v=xzkZWjwt5vw',
-  ];
+    seasonList.clear();
+    await ref.read(seasonListProvider).getAllSeason();
+    final seasonProvider = ref.watch(seasonListProvider);
+    seasonList = seasonProvider.allSeasonListState;
 
+    if (seasonList.isNotEmpty) {
+      initializeVideoController();
+    } else {
+      // Handle empty season list (optional)
+      print("No seasons found!");
+    }
 
-  fetchData () async{
     id =  await fetchCurrentLiveStreamId();
     setState(() {
       _controller = YoutubePlayerController(
         initialVideoId: id,
-        flags: YoutubePlayerFlags(
+        flags: const YoutubePlayerFlags(
             mute: false,
             autoPlay: true,
             disableDragSeek: false,
@@ -45,7 +58,54 @@ class _DrawTabState extends State<DrawTab> {
         ),
       );
     });
+
+    setState(() {
+      loading = true;
+    });
   }
+
+  initializeVideoController() {
+    _controllers.clear();
+
+    // Loop through all seasons and configure the player for past live streams
+    print("season list length ${seasonList.length}");
+
+    for (var season in seasonList) {
+      String? videoId;
+      // Check if the URL is a live stream
+      if (season.videoLink!.contains("/live/")) {
+        // Manually extract the video ID from live stream URL
+        RegExp regExp = RegExp(r"youtube\.com\/live\/([a-zA-Z0-9_-]+)");
+        var match = regExp.firstMatch(season.videoLink.toString());
+        if (match != null) {
+          videoId = match.group(1);  // Extracted video ID
+        }
+      } else {
+        // For regular video URLs, use convertUrlToId
+        videoId = YoutubePlayer.convertUrlToId(season.videoLink.toString());
+      }
+
+      print("${season.videoLink}");
+      print("videoId: $videoId");
+
+      if (videoId != null) {
+        _controllers.add(YoutubePlayerController(
+          initialVideoId: videoId,
+          flags: const YoutubePlayerFlags(
+            autoPlay: false,
+            mute: false,
+            isLive: true,
+            forceHD: true,
+            showLiveFullscreenButton: false
+          ),
+        ));
+      }
+      setState(() {
+
+      });
+    }
+  }
+
 
   Future<String> fetchCurrentLiveStreamId() async {
     String apiKey = 'AIzaSyBIo2-dUdj6fQHSsIDJhXPgSxNq38KCXb0';
@@ -69,25 +129,20 @@ class _DrawTabState extends State<DrawTab> {
     }
   }
 
-  List<Item> generateItems(int count) {
-    return List<Item>.generate(count, (int index) {
-      return Item(
-        header: 'Panel $index',
-        body: 'This is the content of panel $index',
-      );
-    });
-  }
-
-
-  List<Item> _data = [];
-
+  List<SeasonList> seasonList = [];
+  bool loading = false;
 
 
   @override
   void initState() {
     super.initState();
-    _data = generateItems(20);
-    fetchData();
+      fetchData();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -98,9 +153,13 @@ class _DrawTabState extends State<DrawTab> {
         backgroundColor: screenBackgroundColor,
         automaticallyImplyLeading: false,
         leading: GestureDetector(
-            onTap: () => context.pushRoute(DashboardRoute(bottomIndex: 0)),
-            child: const Icon(Icons.arrow_back_ios_new, color: Colors.white,size: 25,)),
-        title: Text("The Draw", style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),),
+          onTap: () => context.pushRoute(DashboardRoute(bottomIndex: 0)),
+          child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 25),
+        ),
+        title: Text(
+          "The Draw",
+          style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
       ),
       body: Padding(
         padding: EdgeInsets.all(10.0),
@@ -122,7 +181,8 @@ class _DrawTabState extends State<DrawTab> {
                       ),
                     ),
                     Gap(15),
-                    (id != "qVuSgK86qFw")?Stack(
+                    (id != "qVuSgK86qFw")
+                        ? Stack(
                       children: [
                         YoutubePlayer(
                           controller: _controller,
@@ -160,21 +220,30 @@ class _DrawTabState extends State<DrawTab> {
                             ),
                           ),
                       ],
-                    ):Image.asset("assets/images/livenodataimage.png", width: double.infinity, height: MediaQuery.of(context).size.height * 0.25, fit: BoxFit.fitHeight,),
+                    )
+                        : Image.asset(
+                      "assets/images/livenodataimage.png",
+                      width: double.infinity,
+                      height: MediaQuery.of(context).size.height * 0.25,
+                      fit: BoxFit.fitHeight,
+                    ),
                   ],
                 ),
               ),
-              Text("Previous Draws", style: GoogleFonts.poppins(fontSize: 18, color: Colors.white, fontWeight: FontWeight.w500),),
+              Text(
+                "Previous Draws",
+                style: GoogleFonts.poppins(fontSize: 18, color: Colors.white, fontWeight: FontWeight.w500),
+              ),
               Gap(10),
               ListView.builder(
                 shrinkWrap: true,
-                itemCount: _data.length,
+                itemCount: seasonList.length,
                 physics: NeverScrollableScrollPhysics(),
                 itemBuilder: (context, index) {
-                  if (_data.isNotEmpty) {
-                    _data[0].isExpanded = true;
+                  if (seasonList.isNotEmpty) {
+                    seasonList[0].isExpanded = true;
                   }
-                  String videoId = YoutubePlayer.convertUrlToId(videoUrls[0])!;
+
                   return Container(
                     margin: const EdgeInsets.only(bottom: 10),
                     decoration: BoxDecoration(
@@ -187,7 +256,7 @@ class _DrawTabState extends State<DrawTab> {
                       expandedHeaderPadding: EdgeInsets.zero,
                       expansionCallback: (int panelIndex, bool isExpanded) {
                         setState(() {
-                          _data[index].isExpanded = !_data[index].isExpanded;
+                          seasonList[index].isExpanded = !seasonList[index].isExpanded;
                         });
                       },
                       children: [
@@ -200,7 +269,7 @@ class _DrawTabState extends State<DrawTab> {
                                 text: TextSpan(
                                   children: <TextSpan>[
                                     TextSpan(
-                                      text: "Season Name ",
+                                      text: seasonList[index].name.toString(),
                                       style: GoogleFonts.poppins(
                                         color: Colors.yellow,
                                         fontWeight: FontWeight.w500,
@@ -208,7 +277,7 @@ class _DrawTabState extends State<DrawTab> {
                                       ),
                                     ),
                                     TextSpan(
-                                      text: "(12 : 12 : 2024 - 12 : 12 : 2024)",
+                                      text: "  (${seasonList[index].startDate.toString()} - ${seasonList[index].endDate.toString()})",
                                       style: GoogleFonts.poppins(
                                         color: Colors.grey,
                                         fontWeight: FontWeight.w400,
@@ -230,7 +299,7 @@ class _DrawTabState extends State<DrawTab> {
                                       ),
                                       SizedBox(width: 10),
                                       Text(
-                                        "Username Demo",
+                                        seasonList[index].winner1!.name.toString(),
                                         style: GoogleFonts.poppins(
                                           color: Colors.white,
                                           fontWeight: FontWeight.w500,
@@ -254,7 +323,7 @@ class _DrawTabState extends State<DrawTab> {
                                           SizedBox(
                                             width: MediaQuery.of(context).size.width * 0.27,
                                             child: Text(
-                                              "Username123",
+                                              seasonList[index].winner2!.name.toString(),
                                               style: GoogleFonts.poppins(
                                                 color: Colors.white70,
                                                 fontWeight: FontWeight.w500,
@@ -277,7 +346,7 @@ class _DrawTabState extends State<DrawTab> {
                                           SizedBox(
                                             width: MediaQuery.of(context).size.width * 0.27,
                                             child: Text(
-                                              "Username demomoomomo",
+                                              seasonList[index].winner3!.name.toString(),
                                               style: GoogleFonts.poppins(
                                                 color: Colors.white70,
                                                 fontWeight: FontWeight.w500,
@@ -301,42 +370,22 @@ class _DrawTabState extends State<DrawTab> {
                             ),
                             padding: EdgeInsets.all(10.0),
                             child: YoutubePlayer(
-                              controller: YoutubePlayerController(
-                                initialVideoId: videoId,
-                                flags: YoutubePlayerFlags(
-                                  autoPlay: false,
-                                  mute: false,
-                                  isLive: false,
-                                  forceHD: true,
-                                ),
-                              ),
+                              controller: _controllers[index],
                               showVideoProgressIndicator: true,
                             ),
                           ),
-                          isExpanded: _data[index].isExpanded,
+                          isExpanded: seasonList[index].isExpanded,
                         ),
                       ],
                     ),
                   );
                 },
               )
-
             ],
           ),
         ),
       ),
     );
   }
-}
 
-class Item {
-  Item({
-    required this.header,
-    required this.body,
-    this.isExpanded = false,
-  });
-
-  String header;
-  String body;
-  bool isExpanded;
 }

@@ -22,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen>  with TickerProviderStateMi
   @override
   void initState() {
     super.initState();
-    HiveRepo.instance.setBaseUrl(baseUrl: "https://wawapp.globify.in/public/api");
+    HiveRepo.instance.setBaseUrl(baseUrl: "https://wawapp.globify.in/api");
     infoScreenValue = HiveRepo.instance.getInfoScreenValue() ?? "";
     Timer(const Duration(seconds: 2), () {
       if(infoScreenValue == "watched"){

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:waw/models/user/user_details_model.dart';
 import 'package:waw/routes/app_router.gr.dart';
 import 'package:waw/theme/colors.dart';
 import '../../gen/assets.gen.dart';
@@ -154,7 +155,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       showActions: false,
                       title: "Sign In",
                       onPressed: (){
-                        // _login();
+                        _login();
                       },
                     ),
                     Gap(60),
@@ -193,41 +194,46 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     );
   }
 
-  // Future<void> _login() async {
-  //   if (!_formKey.currentState!.validate()) return;
-  //   // setState(() {
-  //   //   submitting = true;
-  //   // });
-  //
-  //   try {
-  //     var userDetails = await ref.read(userDetailsProvider).registerUser(
-  //       name: "0",
-  //       mob_no: _userName.text,
-  //       whatsapp_no: _password.text,
-  //       email: departmentId.toString(),
-  //       address: departmentId.toString(),
-  //       location: departmentId.toString(),
-  //       image: departmentId.toString(),
-  //     );
-  //     if(userDetails != null){
-  //       HiveRepo.instance.user = userDetails;
-  //       userNameStored = "";
-  //       passwordStored = "";
-  //       context.pushRoute(HomeRoute());
-  //     }else{
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(content: Text('Please check your username or password'),
-  //           duration: Duration(milliseconds: 600),),
-  //       );
-  //     }
-  //
-  //     // ignore: use_build_context_synchronously
-  //     // Navigator.pop(context);
-  //   } catch (e) {
-  //     // ignore: use_build_context_synchronously
-  //   }
-  //   // setState(() {
-  //   //   submitting = false;
-  //   // });
-  // }
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) return;
+    // setState(() {
+    //   submitting = true;
+    // });
+
+    try {
+      var userDetails = await ref.read(userDetailsProvider).userSignIn(_mobile.text);
+      print(userDetails.data!.name);
+      print(userDetails.data!.mobNo);
+      print(userDetails);
+      if(userDetails.data != null){
+        UserDetails user = UserDetails(data: Data());
+        print("dsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsds");
+        user.data!.userRole = userDetails.data!.userRole;
+        user.data!.name = userDetails.data!.name;
+        user.data!.mobNo = userDetails.data!.mobNo;
+        user.data!.whatsappNo = userDetails.data!.whatsappNo;
+        user.data!.email = userDetails.data!.email;
+        user.data!.address = userDetails.data!.address;
+        user.data!.location = userDetails.data!.location.toString();
+        user.data!.image = userDetails.data!.image;
+        user.data!.updatedAt = userDetails.data!.updatedAt;
+        user.data!.createdAt = userDetails.data!.createdAt;
+        user.data!.id = userDetails.data!.id;
+        HiveRepo.instance.user = user;
+        context.pushRoute(DashboardRoute(bottomIndex: 0));
+      }else{
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please check your username or password'),
+            duration: Duration(milliseconds: 600),),
+        );
+      }
+      // ignore: use_build_context_synchronously
+      // Navigator.pop(context);
+    } catch (e) {
+      // ignore: use_build_context_synchronously
+    }
+    // setState(() {
+    //   submitting = false;
+    // });
+  }
 }

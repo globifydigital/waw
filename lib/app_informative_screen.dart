@@ -26,7 +26,7 @@ class _AppInformationScreenState extends State<AppInformationScreen> with Single
   late AnimationController _animationController;
   late Animation<double> _animation;
   int _currentSlide = 0;
-  CarouselController _carouselController = CarouselController();
+  CarouselSliderController _carouselController = CarouselSliderController ();
 
   @override
   void initState() {
@@ -43,6 +43,7 @@ class _AppInformationScreenState extends State<AppInformationScreen> with Single
 
     _animationController.forward();
     HiveRepo.instance.setInfoScreenWatched(value: "watched");
+    HiveRepo.instance.setInitialNotification(value: "0");
   }
 
   List<String> images = [
@@ -194,7 +195,8 @@ class _AppInformationScreenState extends State<AppInformationScreen> with Single
                           margin: const EdgeInsets.symmetric(horizontal: 2.0),
                           decoration: BoxDecoration(
                             shape: BoxShape.rectangle,
-                            color: _currentSlide == index ? Colors.black54 : Colors.grey,
+                            color: _currentSlide == index ? Colors.yellow : Colors.grey
+                            ,
                           ),
                         );
                       }),

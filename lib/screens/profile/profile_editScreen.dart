@@ -3,28 +3,39 @@ import 'dart:io';
 
 import 'package:auto_route/annotations.dart';
 import 'package:auto_route/auto_route.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:waw/theme/colors.dart';
 
+import '../../models/district/district_model.dart';
+import '../../models/user/individual_user_model.dart';
+import '../../models/user/user_details_model.dart';
+import '../../providers/district_provider.dart';
+import '../../providers/user_login_provider.dart';
+import '../../rest/hive_repo.dart';
 import '../../routes/app_router.gr.dart';
 import '../../widgets/login_button.dart';
 import '../../widgets/profile_shimmer_view.dart';
 
 
 @RoutePage()
-class ProfileEditScreen extends StatefulWidget {
-  const ProfileEditScreen({super.key});
+class ProfileEditScreen extends ConsumerStatefulWidget {
+  final UserModel? userModel;
+  const ProfileEditScreen({super.key, required this.userModel});
 
   @override
-  State<ProfileEditScreen> createState() => _ProfileEditScreenState();
+  ConsumerState<ProfileEditScreen> createState() => _ProfileEditScreenState(this.userModel);
 }
 
-class _ProfileEditScreenState extends State<ProfileEditScreen> {
+class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   File? _image;
+  UserModel? userModel;
 
   final _formKey = GlobalKey<FormState>();
   var _name = TextEditingController();
@@ -35,214 +46,50 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
 
   String? _selectedDistrict;
-  final List<String> countries = [
-    'Afghanistan',
-    'Albania',
-    'Algeria',
-    'Andorra',
-    'Angola',
-    'Antigua and Barbuda',
-    'Argentina',
-    'Armenia',
-    'Australia',
-    'Austria',
-    'Azerbaijan',
-    'Bahamas',
-    'Bahrain',
-    'Bangladesh',
-    'Barbados',
-    'Belarus',
-    'Belgium',
-    'Belize',
-    'Benin',
-    'Bhutan',
-    'Bolivia',
-    'Bosnia and Herzegovina',
-    'Botswana',
-    'Brazil',
-    'Brunei',
-    'Bulgaria',
-    'Burkina Faso',
-    'Burundi',
-    'Cabo Verde',
-    'Cambodia',
-    'Cameroon',
-    'Canada',
-    'Central African Republic',
-    'Chad',
-    'Chile',
-    'China',
-    'Colombia',
-    'Comoros',
-    'Congo (Congo-Brazzaville)',
-    'Costa Rica',
-    'Croatia',
-    'Cuba',
-    'Cyprus',
-    'Czechia (Czech Republic)',
-    'Denmark',
-    'Djibouti',
-    'Dominica',
-    'Dominican Republic',
-    'Ecuador',
-    'Egypt',
-    'El Salvador',
-    'Equatorial Guinea',
-    'Eritrea',
-    'Estonia',
-    'Eswatini (fmr. "Swaziland")',
-    'Ethiopia',
-    'Fiji',
-    'Finland',
-    'France',
-    'Gabon',
-    'Gambia',
-    'Georgia',
-    'Germany',
-    'Ghana',
-    'Greece',
-    'Grenada',
-    'Guatemala',
-    'Guinea',
-    'Guinea-Bissau',
-    'Guyana',
-    'Haiti',
-    'Holy See',
-    'Honduras',
-    'Hungary',
-    'Iceland',
-    'India',
-    'Indonesia',
-    'Iran',
-    'Iraq',
-    'Ireland',
-    'Israel',
-    'Italy',
-    'Jamaica',
-    'Japan',
-    'Jordan',
-    'Kazakhstan',
-    'Kenya',
-    'Kiribati',
-    'Kuwait',
-    'Kyrgyzstan',
-    'Laos',
-    'Latvia',
-    'Lebanon',
-    'Lesotho',
-    'Liberia',
-    'Libya',
-    'Liechtenstein',
-    'Lithuania',
-    'Luxembourg',
-    'Madagascar',
-    'Malawi',
-    'Malaysia',
-    'Maldives',
-    'Mali',
-    'Malta',
-    'Marshall Islands',
-    'Mauritania',
-    'Mauritius',
-    'Mexico',
-    'Micronesia',
-    'Moldova',
-    'Monaco',
-    'Mongolia',
-    'Montenegro',
-    'Morocco',
-    'Mozambique',
-    'Myanmar (formerly Burma)',
-    'Namibia',
-    'Nauru',
-    'Nepal',
-    'Netherlands',
-    'New Zealand',
-    'Nicaragua',
-    'Niger',
-    'Nigeria',
-    'North Korea',
-    'North Macedonia',
-    'Norway',
-    'Oman',
-    'Pakistan',
-    'Palau',
-    'Palestine State',
-    'Panama',
-    'Papua New Guinea',
-    'Paraguay',
-    'Peru',
-    'Philippines',
-    'Poland',
-    'Portugal',
-    'Qatar',
-    'Romania',
-    'Russia',
-    'Rwanda',
-    'Saint Kitts and Nevis',
-    'Saint Lucia',
-    'Saint Vincent and the Grenadines',
-    'Samoa',
-    'San Marino',
-    'Sao Tome and Principe',
-    'Saudi Arabia',
-    'Senegal',
-    'Serbia',
-    'Seychelles',
-    'Sierra Leone',
-    'Singapore',
-    'Slovakia',
-    'Slovenia',
-    'Solomon Islands',
-    'Somalia',
-    'South Africa',
-    'South Korea',
-    'South Sudan',
-    'Spain',
-    'Sri Lanka',
-    'Sudan',
-    'Suriname',
-    'Sweden',
-    'Switzerland',
-    'Syria',
-    'Tajikistan',
-    'Tanzania',
-    'Thailand',
-    'Timor-Leste',
-    'Togo',
-    'Tonga',
-    'Trinidad and Tobago',
-    'Tunisia',
-    'Turkey',
-    'Turkmenistan',
-    'Tuvalu',
-    'Uganda',
-    'Ukraine',
-    'United Arab Emirates',
-    'United Kingdom',
-    'United States of America',
-    'Uruguay',
-    'Uzbekistan',
-    'Vanuatu',
-    'Venezuela',
-    'Vietnam',
-    'Yemen',
-    'Zambia',
-    'Zimbabwe',
-  ];
+  List<DistrictList> districtList = [];
+
+  fetchData() async {
+
+    districtList.clear();
+    await ref.read(districtProvider).getAllDistricts();
+    final districtListProvider = ref.watch(districtProvider);
+    districtList = districtListProvider.allDistrictListState;
+
+    setState(() {});
+
+  }
+
+  getUserData () {
+    _name.text = userModel!.data!.name.toString();
+    _mobile.text = userModel!.data!.mobNo.toString();
+    _mobileWhatsp.text = userModel!.data!.whatsappNo.toString();
+    _email.text = userModel!.data!.email.toString();
+    _address.text = userModel!.data!.address.toString();
+    _selectedDistrict = userModel!.data!.location.toString();
+  }
+
 
 
   Future<void> _pickImage() async {
-    final ImagePicker _picker = ImagePicker();
-    // Show dialog to choose between camera or gallery
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    final ImagePicker picker = ImagePicker();
+    final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
-        _image = File(pickedFile.path); // Update the image file
+        _image = File(pickedFile.path);
       });
     }
   }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getUserData();
+    fetchData();
+  }
+
+  _ProfileEditScreenState(this.userModel);
 
   @override
   Widget build(BuildContext context) {
@@ -254,7 +101,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         leading: GestureDetector(
-            onTap: () => context.pushRoute(DashboardRoute(bottomIndex: 3)),
+            onTap: () => context.pushRoute(ProfileRoute()),
             child: const Icon(Icons.arrow_back_ios_new, color: Colors.white,size: 25,)),
         title: Text("Edit Profile", style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),),
       ),
@@ -287,49 +134,83 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         await _pickImage();
                       },
                       child: CircleAvatar(
-                        radius: 50, // Control the size of the circle
-                        backgroundColor: Colors.grey[300], // Background color of the circle
-                        child: _image == null
-                            ? Icon(Icons.add_a_photo, size: 30, color: Colors.grey) // Placeholder icon
-                            : ClipOval(
-                          child: Image.file(
-                            _image!,
-                            width: 120,
-                            height: 120,
-                            fit: BoxFit.cover,
-                          ),
+                        radius: MediaQuery.of(context).size.width * 0.1,
+                        backgroundColor: Colors.grey[300],
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            _image != null?
+                            ClipOval(
+                              child: Image.file(
+                                _image!,
+                                width: 120,
+                                height: 120,
+                                fit: BoxFit.cover,
+                              ),
+                            ):CircleAvatar(
+                              radius: MediaQuery.of(context).size.width * 0.1,
+                              backgroundImage: NetworkImage(
+                                "https://wawapp.globify.in/storage/app/public/${userModel!.data!.image.toString()}",
+                              ),
+                              backgroundColor: Colors.transparent,
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Icon(
+                                Icons.add_a_photo,
+                                size: 24,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
+                      )
+
                     ),
-                    Gap(25),
+                    const Gap(25),
                     TextFormField(
                       controller: _name,
                       style: GoogleFonts.poppins(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
                       decoration: InputDecoration(
                         hintText: 'Name',
-                        hintStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 14, fontWeight: FontWeight.w300),
+                        hintStyle: GoogleFonts.poppins(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w300),
                         prefixIcon: Icon(Iconsax.user, color: Colors.yellow,),
                         contentPadding: EdgeInsets.symmetric(vertical: 16.0),
                         prefixIconConstraints: BoxConstraints(minWidth: 50),
                         filled: true,
                         fillColor: Colors.transparent,
                         border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Colors.grey,
+                          borderSide: const BorderSide(
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Colors.grey,
+                          borderSide: const BorderSide(
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
+                          borderSide: const BorderSide(
                             color: Colors.white,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.white54,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
@@ -354,9 +235,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       ],
                       style: GoogleFonts.poppins(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
                       maxLength: 10,
+                      readOnly: true,
                       decoration: InputDecoration(
                         hintText: 'Mobile Number',
-                        hintStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 14, fontWeight: FontWeight.w300),
+                        hintStyle: GoogleFonts.poppins(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w300),
                         prefixIcon: Icon(Iconsax.mobile, color: Colors.yellow,),
                         contentPadding: EdgeInsets.symmetric(vertical: 16.0),
                         prefixIconConstraints: BoxConstraints(minWidth: 50),
@@ -365,14 +247,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         fillColor: Colors.transparent,
                         border: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey,
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey,
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
@@ -380,6 +262,20 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: Colors.white,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.white54,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
@@ -406,7 +302,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       maxLength: 10,
                       decoration: InputDecoration(
                         hintText: 'Mobile Number (Whats Up)',
-                        hintStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 14, fontWeight: FontWeight.w300),
+                        hintStyle: GoogleFonts.poppins(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w300),
                         prefixIcon: Image.asset("assets/images/whatsapplogo.png", color: Colors.yellow,),
                         contentPadding: EdgeInsets.symmetric(vertical: 16.0),
                         prefixIconConstraints: BoxConstraints(minWidth: 50),
@@ -415,14 +311,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         fillColor: Colors.transparent,
                         border: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey,
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey,
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
@@ -430,6 +326,20 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: Colors.white,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.white54,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
@@ -451,7 +361,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       style: GoogleFonts.poppins(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
                       decoration: InputDecoration(
                         hintText: 'Email',
-                        hintStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 14, fontWeight: FontWeight.w300),
+                        hintStyle: GoogleFonts.poppins(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w300),
                         prefixIcon: Icon(Icons.mail_outline_sharp, color: Colors.yellow,),
                         contentPadding: EdgeInsets.symmetric(vertical: 16.0),
                         prefixIconConstraints: BoxConstraints(minWidth: 50),
@@ -459,14 +369,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         fillColor: Colors.transparent,
                         border: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey,
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey,
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
@@ -474,6 +384,20 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: Colors.white,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.white54,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
@@ -495,7 +419,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       style: GoogleFonts.poppins(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
                       decoration: InputDecoration(
                         hintText: 'Address',
-                        hintStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 14, fontWeight: FontWeight.w300),
+                        hintStyle: GoogleFonts.poppins(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w300),
                         prefixIcon: Icon(Icons.location_city, color: Colors.yellow,),
                         contentPadding: EdgeInsets.symmetric(vertical: 16.0),
                         prefixIconConstraints: BoxConstraints(minWidth: 50),
@@ -503,14 +427,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         fillColor: Colors.transparent,
                         border: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey,
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey,
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
@@ -518,6 +442,20 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: Colors.white,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.white54,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
@@ -536,62 +474,89 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     Gap(15),
                     DropdownButtonFormField<String>(
                       value: _selectedDistrict,
-                      dropdownColor: Colors.blueGrey,
+                      dropdownColor: Colors.white70,
+                      hint: Text("Select District",
+                        style: GoogleFonts.poppins(
+                          color: Colors.white54,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
                       menuMaxHeight: 500,
-                      icon: Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
+                      icon: const Padding(
+                        padding: EdgeInsets.only(right: 8.0),
                         child: Icon(
                           Icons.keyboard_arrow_down_sharp,
                           color: Colors.yellow,
                         ),
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Select District',
-                        hintStyle: GoogleFonts.poppins(
-                          color: Colors.white38,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w300,
-                        ),
                         prefixIcon: Icon(Icons.location_on, color: Colors.yellow),
                         contentPadding: EdgeInsets.symmetric(vertical: 16.0),
                         prefixIconConstraints: BoxConstraints(minWidth: 50),
                         filled: true,
                         fillColor: Colors.transparent,
                         border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Colors.grey,
+                          borderSide: const BorderSide(
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Colors.grey,
+                          borderSide: const BorderSide(
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
+                          borderSide: const BorderSide(
                             color: Colors.white,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
                         ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.white54,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.white54,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
                       ),
-                      items: countries.map((district) {
+                      items: districtList.map((district) {
                         return DropdownMenuItem<String>(
-                          value: district,
+                          value: district.id.toString(),
                           child: Text(
-                            district,
+                            district.name.toString(),
                             style: GoogleFonts.poppins(
-                              color: Colors.white,
+                              color: Colors.black,
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                         );
                       }).toList(),
+                      selectedItemBuilder: (BuildContext context) {
+                        return districtList.map((district) {
+                          return Text(
+                            district.name.toString(),
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          );
+                        }).toList();
+                      },
                       onChanged: (value) {
                         setState(() {
                           _selectedDistrict = value;
@@ -609,35 +574,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       showActions: false,
                       title: "Save",
                       onPressed: (){
-                        // _login();
+                        print("aaaaaaa");
+                        _save();
                       },
                     ),
                     Gap(60),
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.center,
-                    //   children: [
-                    //     Text(
-                    //         "Not a member ? ",
-                    //         style: TextStyle(
-                    //           fontSize: 16,
-                    //           color: Colors.white,
-                    //         )
-                    //     ),
-                    //     GestureDetector(
-                    //       onTap: (){
-                    //         context.pushRoute(SignUpRoute());
-                    //       },
-                    //       child: Text(
-                    //           "Register now",
-                    //           style: TextStyle(
-                    //             fontSize: 16,
-                    //             color: Colors.white,
-                    //             fontWeight: FontWeight.bold,
-                    //           )
-                    //       ),
-                    //     ),
-                    //   ],
-                    // ),
                   ],
                 ),
               ),
@@ -646,5 +587,118 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         ),
       ),
     );
+  }
+
+
+  Future<File> _getFileFromNetwork(String imageUrl) async {
+    try {
+      // Initialize Dio to fetch the image
+      final dio = Dio();
+      final response = await dio.get(
+        imageUrl,
+        options: Options(responseType: ResponseType.bytes), // Expecting bytes as response
+      );
+
+      // Check if the response is valid and has data
+      if (response.statusCode != 200 || response.data == null || response.data.isEmpty) {
+        throw Exception('Failed to download image or received empty data');
+      }
+
+      // Get a temporary directory or a persistent one if needed
+      final dir = await getTemporaryDirectory(); // Or use getApplicationDocumentsDirectory for persistent storage
+      final filePath = '${dir.path}/image_from_network.jpg'; // You can change this based on your needs
+
+      final file = File(filePath);
+
+      // Write the data (bytes) to the file
+      await file.writeAsBytes(response.data);
+
+      print('Image saved at: $filePath');
+      return file;
+
+    } catch (e) {
+      print('Error downloading image: $e');
+      throw Exception("Failed to download and save image: $e");
+    }
+  }
+  Future<File> copyFileToDocumentsDirectory(File originalFile) async {
+    final appDocDir = await getApplicationDocumentsDirectory();
+    final newFilePath = '${appDocDir.path}/${originalFile.uri.pathSegments.last}';
+    final newFile = await originalFile.copy(newFilePath);
+    return newFile;
+  }
+
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
+    // setState(() {
+    //   submitting = true;
+    // });
+
+    try {
+      if (_image == null && userModel!.data!.image != null) {
+        _image = await _getFileFromNetwork(
+          "https://wawapp.globify.in/storage/app/public/${userModel!.data!.image}",
+        );
+        print(_image);
+      }else{
+        print(_image);
+      }
+
+      if (_image != null && _image!.existsSync()) {
+        print('File exists at: ${_image!.path}');
+      } else {
+        print('File not found at: ${_image?.path}');
+        // Optionally, handle the case when file is not found or needs to be fetched again
+      }
+
+      // Ensure the file is moved to a more persistent location (optional, if needed)
+      File finalFile = _image!;
+      if (_image!.path.contains('cache')) {
+        finalFile = await copyFileToDocumentsDirectory(_image!);
+        print('File moved to: ${finalFile.path}');
+      }
+
+      var userDetails = await ref.read(userDetailsProvider).editUser(
+        name: _name.text,
+        mob_no: _mobile.text,
+        whatsapp_no: _mobileWhatsp.text,
+        email: _email.text,
+        address: _address.text,
+        location: _selectedDistrict.toString(),
+        file: finalFile,
+      );
+      print(userDetails.user!.name);
+      print(userDetails.user!.mobNo);
+      print(userDetails);
+      if(userDetails.user != null){
+        UserDetails user = UserDetails(data: Data());
+        print("dsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsds");
+        user.data!.userRole = userDetails.user!.userRole;
+        user.data!.name = userDetails.user!.name;
+        user.data!.mobNo = userDetails.user!.mobNo;
+        user.data!.whatsappNo = userDetails.user!.whatsappNo;
+        user.data!.email = userDetails.user!.email;
+        user.data!.address = userDetails.user!.address;
+        user.data!.location = userDetails.user!.location.toString();
+        user.data!.image = userDetails.user!.image;
+        user.data!.updatedAt = userDetails.user!.updatedAt;
+        user.data!.createdAt = userDetails.user!.createdAt;
+        user.data!.id = userDetails.user!.id;
+        HiveRepo.instance.user = user;
+        context.pushRoute(ProfileRoute());
+      }else{
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to save your details'),
+            duration: Duration(milliseconds: 600),),
+        );
+      }
+      // ignore: use_build_context_synchronously
+      // Navigator.pop(context);
+    } catch (e) {
+      // ignore: use_build_context_synchronously
+    }
+    // setState(() {
+    //   submitting = false;
+    // });
   }
 }

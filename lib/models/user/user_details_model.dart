@@ -30,6 +30,7 @@ class Data {
   String? email;
   String? address;
   String? location;
+  String? image;
   String? updatedAt;
   String? createdAt;
   int? id;
@@ -42,6 +43,7 @@ class Data {
         this.email,
         this.address,
         this.location,
+        this.image,
         this.updatedAt,
         this.createdAt,
         this.id});
@@ -54,6 +56,7 @@ class Data {
     email = json['email'];
     address = json['address'];
     location = json['location'];
+    image = json['image'];
     updatedAt = json['updated_at'];
     createdAt = json['created_at'];
     id = json['id'];
@@ -68,6 +71,7 @@ class Data {
     data['email'] = this.email;
     data['address'] = this.address;
     data['location'] = this.location;
+    data['image'] = this.image;
     data['updated_at'] = this.updatedAt;
     data['created_at'] = this.createdAt;
     data['id'] = this.id;

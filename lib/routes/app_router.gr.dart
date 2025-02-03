@@ -11,6 +11,7 @@
 import 'package:auto_route/auto_route.dart' as _i16;
 import 'package:flutter/material.dart' as _i17;
 import 'package:waw/app_informative_screen.dart' as _i2;
+import 'package:waw/models/user/individual_user_model.dart' as _i18;
 import 'package:waw/screens/dashboard.dart' as _i3;
 import 'package:waw/screens/notifications/notifications.dart' as _i6;
 import 'package:waw/screens/profile/about_us_screen.dart' as _i1;
@@ -88,9 +89,13 @@ abstract class $AppRouter extends _i16.RootStackRouter {
       );
     },
     ProfileEditRoute.name: (routeData) {
+      final args = routeData.argsAs<ProfileEditRouteArgs>();
       return _i16.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const _i9.ProfileEditScreen(),
+        child: _i9.ProfileEditScreen(
+          key: args.key,
+          userModel: args.userModel,
+        ),
       );
     },
     ProfileRoute.name: (routeData) {
@@ -294,16 +299,40 @@ class PrivacyPolicyRoute extends _i16.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i9.ProfileEditScreen]
-class ProfileEditRoute extends _i16.PageRouteInfo<void> {
-  const ProfileEditRoute({List<_i16.PageRouteInfo>? children})
-      : super(
+class ProfileEditRoute extends _i16.PageRouteInfo<ProfileEditRouteArgs> {
+  ProfileEditRoute({
+    _i17.Key? key,
+    required _i18.UserModel? userModel,
+    List<_i16.PageRouteInfo>? children,
+  }) : super(
           ProfileEditRoute.name,
+          args: ProfileEditRouteArgs(
+            key: key,
+            userModel: userModel,
+          ),
           initialChildren: children,
         );
 
   static const String name = 'ProfileEditRoute';
 
-  static const _i16.PageInfo<void> page = _i16.PageInfo<void>(name);
+  static const _i16.PageInfo<ProfileEditRouteArgs> page =
+      _i16.PageInfo<ProfileEditRouteArgs>(name);
+}
+
+class ProfileEditRouteArgs {
+  const ProfileEditRouteArgs({
+    this.key,
+    required this.userModel,
+  });
+
+  final _i17.Key? key;
+
+  final _i18.UserModel? userModel;
+
+  @override
+  String toString() {
+    return 'ProfileEditRouteArgs{key: $key, userModel: $userModel}';
+  }
 }
 
 /// generated route for

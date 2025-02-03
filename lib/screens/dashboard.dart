@@ -46,7 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         index: bottomIndex,
         items: <Widget>[
           _buildNavItem(
-            icon: Icons.space_dashboard,
+            icon: Icons.home,
             label: 'Home',
             isSelected: bottomIndex == 0,
           ),
@@ -64,9 +64,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
         onTap: _onItemTapped,
         backgroundColor: screenBackgroundColor,
-        animationDuration: Duration(milliseconds: 400),
-        color: Colors.grey[400]!,
-        buttonBackgroundColor: Colors.white,
+        animationDuration: Duration(milliseconds: 300),
+        color: Colors.amber[500]!,
+        buttonBackgroundColor: Colors.amber,
         height: MediaQuery.of(context).size.height * 0.07,
       ),
     );
@@ -133,11 +133,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Gap(5),
-          CircleAvatar(
-            radius: MediaQuery.of(context).size.width * 0.035,
-            backgroundImage: const AssetImage("assets/images/menuiconimage.png"),
-            backgroundColor: Colors.transparent,
-          ),
+          Icon(Icons.space_dashboard,),
           Text(
             'Menu',
             style: GoogleFonts.poppins(

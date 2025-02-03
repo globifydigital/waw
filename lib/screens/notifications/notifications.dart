@@ -1,8 +1,13 @@
 import 'package:auto_route/annotations.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:waw/models/notification/notification_model.dart';
+import 'package:waw/providers/notiification_provider.dart';
 
+import '../../rest/hive_repo.dart';
 import '../../routes/app_router.gr.dart';
 import '../../theme/colors.dart';
 
@@ -19,45 +24,49 @@ class DateNotification {
 }
 
 @RoutePage()
-class NotificationsScreen extends StatefulWidget {
+class NotificationsScreen extends ConsumerStatefulWidget {
   final int bottomIndex;
   const NotificationsScreen({super.key, required this.bottomIndex});
 
   @override
-  State<NotificationsScreen> createState() => _NotificationsScreenState(this.bottomIndex);
+  ConsumerState<NotificationsScreen> createState() => _NotificationsScreenState(this.bottomIndex);
 }
 
-class _NotificationsScreenState extends State<NotificationsScreen> {
+class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
+
+  bool loading = true;
+  List<NotificationList> notificationList = [];
+
+  fetchData() async {
+    setState(() {
+      loading = true;
+    });
+
+    notificationList.clear();
+    await ref.read(notificationProvider).getAllNotification();
+    final notifications = ref.watch(notificationProvider);
+    notificationList = notifications.allNotificationListState;
+    HiveRepo.instance.setInitialNotification(value: notificationList.length.toString());
+    _groupNotificationsByDate();
+    setState(() {
+      loading = false;
+    });
+  }
 
   int bottomIndex;
-  final List<DateNotification> _notificationsList = [
-    DateNotification(date: "10/11/2024", time: "10:00 AM", notification: "Make Money feature to your app can be a great way to engage users, but it should be done ethically and transparently."),
-    DateNotification(date: "10/11/2024", time: "11:00 AM", notification: "Notification 2"),
-    DateNotification(date: "11/11/2024", time: "09:00 AM", notification: "Notification 3"),
-    DateNotification(date: "11/11/2024", time: "02:00 PM", notification: "Make Money feature to your app can be a great way to engage users, but it should be done ethically and transparently."),
-    DateNotification(date: "20/11/2024", time: "03:30 PM", notification: "Notification 5"),
-    DateNotification(date: "25/11/2024", time: "10:15 AM", notification: "Make Money feature to your app can be a great way to engage users, but it should be done ethically and transparently."),
-    DateNotification(date: "25/11/2024", time: "12:00 PM", notification: "Notification 7"),
-    DateNotification(date: "25/11/2024", time: "01:45 PM", notification: "Make Money feature to your app can be a great way to engage users, but it should be done ethically and transparently."),
-    DateNotification(date: "26/11/2024", time: "04:00 PM", notification: "Notification 9"),
-    DateNotification(date: "30/11/2024", time: "08:00 AM", notification: "Make Money feature to your app can be a great way to engage users, but it should be done ethically and transparently."),
-    DateNotification(date: "30/11/2024", time: "10:30 AM", notification: "Make Money feature to your app can be a great way to engage users, but it should be done ethically and transparently."),
-    DateNotification(date: "30/11/2024", time: "05:00 PM", notification: "Notification 12"),
-  ];
-
-  Map<String, List<DateNotification>> groupedNotifications = {};
+  Map<String, List<NotificationList>> groupedNotifications = {};
 
   @override
   void initState() {
     super.initState();
-    _groupNotificationsByDate();
+    fetchData();
   }
 
   void _groupNotificationsByDate() {
     groupedNotifications = {};
-    for (var notification in _notificationsList) {
+    for (var notification in notificationList) {
       if (!groupedNotifications.containsKey(notification.date)) {
-        groupedNotifications[notification.date] = [];
+        groupedNotifications[notification.date.toString()] = [];
       }
       groupedNotifications[notification.date]!.add(notification);
     }
@@ -83,6 +92,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     });
 
     return dates;
+  }
+
+  String _formatTime(String time) {
+    try {
+      final DateTime parsedTime = DateFormat("HH:mm").parse(time);
+      return DateFormat("hh:mm a").format(parsedTime);
+    } catch (e) {
+      return time;
+    }
   }
 
   String _convertToIso(String date) {
@@ -123,27 +141,43 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             decoration: BoxDecoration(
               color: Colors.grey.withOpacity(0.3),
               borderRadius: BorderRadius.circular(15),
-              border: Border.all(color: Colors.grey, width: 0.2),
+              border: Border.all(color: (notification.flag == "A") ? Colors.amber : Colors.grey, width: 0.2),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Stack(
+              clipBehavior: Clip.none, // This allows the icon to overflow out of the container
               children: [
-                Text(
-                  notification.notification,
-                  style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w300, fontSize: 13),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      notification.title.toString(),
+                      style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w300, fontSize: 13),
+                    ),
+                    const SizedBox(height: 5),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        _formatTime(notification.time.toString()),
+                        style: GoogleFonts.poppins(color: Colors.grey, fontWeight: FontWeight.w300, fontSize: 12),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 5),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    notification.time,
-                    style: GoogleFonts.poppins(color: Colors.grey, fontWeight: FontWeight.w300, fontSize: 12),
+                if (notification.flag == "A")
+                  const Positioned(
+                    top: -10,
+                    right: -10,
+                    child: Icon(
+                      Icons.volume_down,
+                      color: Colors.amber,
+                      size: 24, // Icon size
+                    ),
                   ),
-                ),
               ],
             ),
           );
         }).toList(),
+
         const SizedBox(height: 20),
       ],
     );
@@ -155,24 +189,30 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget build(BuildContext context) {
     final sortedDates = _sortedDates();
 
-    return Scaffold(
-      backgroundColor: screenBackgroundColor,
-      appBar: AppBar(
+    return WillPopScope(
+      onWillPop: () async {
+        context.pushRoute(DashboardRoute(bottomIndex: bottomIndex));
+        return false;
+      },
+      child: Scaffold(
         backgroundColor: screenBackgroundColor,
-        automaticallyImplyLeading: false,
-        leading: GestureDetector(
-          onTap: () => context.pushRoute(DashboardRoute(bottomIndex: bottomIndex)),
-          child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 25),
+        appBar: AppBar(
+          backgroundColor: screenBackgroundColor,
+          automaticallyImplyLeading: false,
+          leading: GestureDetector(
+            onTap: () => context.pushRoute(DashboardRoute(bottomIndex: bottomIndex)),
+            child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 25),
+          ),
+          title: Text(
+            "Notifications",
+            style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
         ),
-        title: Text(
-          "Notifications",
-          style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: ListView(
-          children: sortedDates.map((date) => _buildSection(date)).toList(),
+        body: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: ListView(
+            children: sortedDates.map((date) => _buildSection(date)).toList(),
+          ),
         ),
       ),
     );

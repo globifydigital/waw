@@ -8,11 +8,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:waw/models/district/district_model.dart';
+import 'package:waw/providers/district_provider.dart';
 import 'package:waw/routes/app_router.gr.dart';
 import 'package:waw/theme/colors.dart';
-import '../../gen/assets.gen.dart';
 import 'package:iconsax/iconsax.dart';
-
 import '../../providers/user_login_provider.dart';
 import '../../rest/hive_repo.dart';
 import '../../widgets/login_button.dart';
@@ -39,39 +39,34 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
 
   String? _selectedDistrict;
-  final List<String> districts = [
-    'Thiruvananthapuram',
-    'Kollam',
-    'Pathanamthitta',
-    'Alappuzha',
-    'Kottayam',
-    'Idukki',
-    'Ernakulam',
-    'Thrissur',
-    'Palakkad',
-    'Malappuram',
-    'Kozhikode',
-    'Wayanad',
-    'Kannur',
-    'Kasaragod',
-  ];
+  List<DistrictList> districtList = [];
 
   Future<void> _pickImage() async {
     final ImagePicker _picker = ImagePicker();
-    // Show dialog to choose between camera or gallery
     final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
-        _image = File(pickedFile.path); // Update the image file
+        _image = File(pickedFile.path);
+        print("Local File Path: ${_image!.path}");
       });
     }
+  }
+
+  fetchData() async {
+
+    districtList.clear();
+    await ref.read(districtProvider).getAllDistricts();
+    final districtListProvider = ref.watch(districtProvider);
+    districtList = districtListProvider.allDistrictListState;
+
   }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    fetchData();
   }
 
   _SignUpScreenState();
@@ -111,18 +106,18 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 padding: EdgeInsets.only(bottom: keyboardHeight),
                 child: Column(
                   children: [
-                    Gap(80),
-                    Text("Sign Up", style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold)),
-                    Gap(40),
+                    const Gap(80),
+                    const Text("Sign Up", style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold)),
+                    const Gap(40),
                     GestureDetector(
                       onTap: () async {
                         await _pickImage();
                       },
                       child: CircleAvatar(
-                        radius: 50, // Control the size of the circle
-                        backgroundColor: Colors.grey[300], // Background color of the circle
+                        radius: 50,
+                        backgroundColor: Colors.grey[300],
                         child: _image == null
-                            ? Icon(Icons.add_a_photo, size: 30, color: Colors.grey) // Placeholder icon
+                            ? Icon(Icons.add_a_photo, size: 30, color: Colors.grey)
                             : ClipOval(
                           child: Image.file(
                             _image!,
@@ -139,7 +134,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       style: GoogleFonts.poppins(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
                       decoration: InputDecoration(
                         hintText: 'Name',
-                        hintStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 14, fontWeight: FontWeight.w300),
+                        hintStyle: GoogleFonts.poppins(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w300),
                         prefixIcon: Icon(Iconsax.user, color: Colors.yellow,),
                         contentPadding: EdgeInsets.symmetric(vertical: 16.0),
                         prefixIconConstraints: BoxConstraints(minWidth: 50),
@@ -147,14 +142,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         fillColor: Colors.transparent,
                         border: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey,
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey,
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
@@ -162,6 +157,20 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: Colors.white,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.white54,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
@@ -188,7 +197,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       maxLength: 10,
                       decoration: InputDecoration(
                         hintText: 'Mobile Number',
-                        hintStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 14, fontWeight: FontWeight.w300),
+                        hintStyle: GoogleFonts.poppins(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w300),
                         prefixIcon: Icon(Iconsax.mobile, color: Colors.yellow,),
                         contentPadding: EdgeInsets.symmetric(vertical: 16.0),
                         prefixIconConstraints: BoxConstraints(minWidth: 50),
@@ -197,14 +206,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         fillColor: Colors.transparent,
                         border: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey,
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey,
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
@@ -212,6 +221,20 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: Colors.white,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.white54,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
@@ -238,7 +261,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       maxLength: 10,
                       decoration: InputDecoration(
                         hintText: 'Mobile Number (Whats Up)',
-                        hintStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 14, fontWeight: FontWeight.w300),
+                        hintStyle: GoogleFonts.poppins(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w300),
                         prefixIcon: Image.asset("assets/images/whatsapplogo.png", color: Colors.yellow,),
                         contentPadding: EdgeInsets.symmetric(vertical: 16.0),
                         prefixIconConstraints: BoxConstraints(minWidth: 50),
@@ -247,14 +270,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         fillColor: Colors.transparent,
                         border: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey,
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey,
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
@@ -262,6 +285,20 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: Colors.white,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.white54,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
@@ -283,7 +320,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       style: GoogleFonts.poppins(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
                       decoration: InputDecoration(
                         hintText: 'Email',
-                        hintStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 14, fontWeight: FontWeight.w300),
+                        hintStyle: GoogleFonts.poppins(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w300),
                         prefixIcon: Icon(Icons.mail_outline_sharp, color: Colors.yellow,),
                         contentPadding: EdgeInsets.symmetric(vertical: 16.0),
                         prefixIconConstraints: BoxConstraints(minWidth: 50),
@@ -291,14 +328,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         fillColor: Colors.transparent,
                         border: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey,
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey,
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
@@ -306,6 +343,20 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: Colors.white,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.white54,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
@@ -327,7 +378,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       style: GoogleFonts.poppins(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
                       decoration: InputDecoration(
                         hintText: 'Address',
-                        hintStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 14, fontWeight: FontWeight.w300),
+                        hintStyle: GoogleFonts.poppins(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w300),
                         prefixIcon: Icon(Icons.location_city, color: Colors.yellow,),
                         contentPadding: EdgeInsets.symmetric(vertical: 16.0),
                         prefixIconConstraints: BoxConstraints(minWidth: 50),
@@ -335,14 +386,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         fillColor: Colors.transparent,
                         border: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey,
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey,
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
@@ -350,6 +401,20 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: Colors.white,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.white54,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
@@ -369,6 +434,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     DropdownButtonFormField<String>(
                       value: _selectedDistrict,
                       dropdownColor: Colors.blueGrey,
+                      hint: Text("Select District",
+                        style: GoogleFonts.poppins(
+                          color: Colors.white54,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
                       menuMaxHeight: 500,
                       icon: Padding(
                         padding: const EdgeInsets.only(right: 8.0),
@@ -378,12 +450,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         ),
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Select District',
-                        hintStyle: GoogleFonts.poppins(
-                          color: Colors.white38,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w300,
-                        ),
                         prefixIcon: Icon(Icons.location_on, color: Colors.yellow),
                         contentPadding: EdgeInsets.symmetric(vertical: 16.0),
                         prefixIconConstraints: BoxConstraints(minWidth: 50),
@@ -391,14 +457,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         fillColor: Colors.transparent,
                         border: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey,
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey,
+                            color: Colors.white54,
                             width: 0.5,
                           ),
                           borderRadius: BorderRadius.circular(15.0),
@@ -410,12 +476,26 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           ),
                           borderRadius: BorderRadius.circular(15.0),
                         ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.white54,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.white54,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
                       ),
-                      items: districts.map((district) {
+                      items: districtList.map((district) {
                         return DropdownMenuItem<String>(
-                          value: district,
+                          value: district.id.toString(),
                           child: Text(
-                            district,
+                            district.name.toString(),
                             style: GoogleFonts.poppins(
                               color: Colors.white,
                               fontSize: 14,
@@ -427,6 +507,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       onChanged: (value) {
                         setState(() {
                           _selectedDistrict = value;
+                          print("_selectedDistrict $_selectedDistrict");
                         });
                       },
                       validator: (value) {
@@ -491,11 +572,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         name: _name.text,
         mob_no: _mobile.text,
         whatsapp_no: _mobileWhatsp.text,
-        email: _email.toString(),
-        address: _address.toString(),
-        location: "1",
-        image: "",
+        email: _email.text,
+        address: _address.text,
+        location: _selectedDistrict.toString(),
+        file: _image!,
       );
+      print(userDetails.data!.name);
+      print(userDetails.data!.mobNo);
+      print(userDetails);
       if(userDetails != null){
         HiveRepo.instance.user = userDetails;
         context.pushRoute(DashboardRoute(bottomIndex: 0));

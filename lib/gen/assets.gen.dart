@@ -40,6 +40,10 @@ class $AssetsImagesGen {
   AssetGenImage get livenodataimage =>
       const AssetGenImage('assets/images/livenodataimage.png');
 
+  /// File path: assets/images/lockimage.png
+  AssetGenImage get lockimage =>
+      const AssetGenImage('assets/images/lockimage.png');
+
   /// File path: assets/images/logouticonimage.png
   AssetGenImage get logouticonimage =>
       const AssetGenImage('assets/images/logouticonimage.png');
@@ -55,6 +59,10 @@ class $AssetsImagesGen {
   /// File path: assets/images/personimage.jpg
   AssetGenImage get personimage =>
       const AssetGenImage('assets/images/personimage.jpg');
+
+  /// File path: assets/images/personprofile.png
+  AssetGenImage get personprofile =>
+      const AssetGenImage('assets/images/personprofile.png');
 
   /// File path: assets/images/privacypolicyiconimage.png
   AssetGenImage get privacypolicyiconimage =>
@@ -75,6 +83,10 @@ class $AssetsImagesGen {
   /// File path: assets/images/thumbnailimage.png
   AssetGenImage get thumbnailimage =>
       const AssetGenImage('assets/images/thumbnailimage.png');
+
+  /// File path: assets/images/tickiconimage.png
+  AssetGenImage get tickiconimage =>
+      const AssetGenImage('assets/images/tickiconimage.png');
 
   /// File path: assets/images/waw_srnshot_logo.png
   AssetGenImage get wawSrnshotLogo =>
@@ -109,15 +121,18 @@ class $AssetsImagesGen {
         infoscreenthree,
         infoscreentwo,
         livenodataimage,
+        lockimage,
         logouticonimage,
         menuiconimage,
         noticketdataimage,
         personimage,
+        personprofile,
         privacypolicyiconimage,
         successicon,
         termsandconditioniconimage,
         thedrawicon,
         thumbnailimage,
+        tickiconimage,
         wawSrnshotLogo,
         wawtheme,
         whatsapplogo,

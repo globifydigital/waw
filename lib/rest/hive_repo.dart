@@ -7,6 +7,7 @@ import 'package:waw/models/user/user_details_model.dart';
 
 const String _baseUrl = 'baseURL';
 const String _infoScreen = 'infoScreen';
+const String _notification = 'notification';
 const String _user = 'user';
 const String _departmentId = 'departmentId';
 const String _roleId = 'roleId';
@@ -50,7 +51,11 @@ class HiveRepo {
   }
 
   setInfoScreenWatched({String? value}) {
-    setRoleIdValue(value);
+    setInfoScreenWatchedValue(value);
+  }
+
+  setInitialNotification({String? value}) {
+    setInitialNotificationValue(value);
   }
 
   Future<void> setDepartmentIdValue(String? value) async =>
@@ -58,6 +63,9 @@ class HiveRepo {
 
   Future<void> setInfoScreenWatchedValue(String? value) async =>
       _box.put(_infoScreen, value);
+
+  Future<void> setInitialNotificationValue(String? value) async =>
+      _box.put(_notification, value);
 
   Future<void> setRoleIdValue(String? value) async =>
       _box.put(_roleId, value);
@@ -69,9 +77,11 @@ class HiveRepo {
 
   String? getDepartmentId() => _box.get(_departmentId) as String?;
 
+  String? getNotificationValue() => _box.get(_notification) as String?;
+
   String? getRoleId() => _box.get(_roleId) as String?;
 
-  String? getInfoScreenValue() => _box.get(_roleId) as String?;
+  String? getInfoScreenValue() => _box.get(_infoScreen) as String?;
 
   setTokens({String? accessToken, String? refreshToken}) {
     setAccessToken(accessToken);
@@ -111,9 +121,9 @@ class HiveRepo {
 
   Future<void> logout() async {
     await _box.delete(_user);
-    await _box.delete(_baseUrl);
-    await _box.delete(_authToken);
-    await _box.delete(_refreshToken);
+    // await _box.delete(_baseUrl);
+    // await _box.delete(_authToken);
+    // await _box.delete(_refreshToken);
   }
 
   String? get defaultLanguage => _box.get(_defaultLanguage);

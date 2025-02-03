@@ -1,17 +1,17 @@
-class AllWatchedVideos {
+class UnWatchedVideos {
   bool? success;
   String? message;
-  List<AllWatchedVideosList>? data;
+  List<UnWatchedVideosList>? data;
 
-  AllWatchedVideos({this.success, this.message, this.data});
+  UnWatchedVideos({this.success, this.message, this.data});
 
-  AllWatchedVideos.fromJson(Map<String, dynamic> json) {
+  UnWatchedVideos.fromJson(Map<String, dynamic> json) {
     success = json['success'];
     message = json['message'];
     if (json['data'] != null) {
-      data = <AllWatchedVideosList>[];
+      data = <UnWatchedVideosList>[];
       json['data'].forEach((v) {
-        data!.add(new AllWatchedVideosList.fromJson(v));
+        data!.add(new UnWatchedVideosList.fromJson(v));
       });
     }
   }
@@ -27,70 +27,7 @@ class AllWatchedVideos {
   }
 }
 
-class AllWatchedVideosList {
-  int? id;
-  int? userId;
-  int? videoId;
-  String? videoPoints;
-  String? videoStartTime;
-  String? date;
-  int? flag;
-  String? duration;
-  String? createdAt;
-  String? updatedAt;
-  Null? deletedAt;
-  Video? video;
-
-  AllWatchedVideosList(
-      {this.id,
-        this.userId,
-        this.videoId,
-        this.videoPoints,
-        this.videoStartTime,
-        this.date,
-        this.flag,
-        this.duration,
-        this.createdAt,
-        this.updatedAt,
-        this.deletedAt,
-        this.video});
-
-  AllWatchedVideosList.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    userId = json['user_id'];
-    videoId = json['video_id'];
-    videoPoints = json['video_points'];
-    videoStartTime = json['video_start_time'];
-    date = json['date'];
-    flag = json['flag'];
-    duration = json['duration'];
-    createdAt = json['created_at'];
-    updatedAt = json['updated_at'];
-    deletedAt = json['deleted_at'];
-    video = json['video'] != null ? new Video.fromJson(json['video']) : null;
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['user_id'] = this.userId;
-    data['video_id'] = this.videoId;
-    data['video_points'] = this.videoPoints;
-    data['video_start_time'] = this.videoStartTime;
-    data['date'] = this.date;
-    data['flag'] = this.flag;
-    data['duration'] = this.duration;
-    data['created_at'] = this.createdAt;
-    data['updated_at'] = this.updatedAt;
-    data['deleted_at'] = this.deletedAt;
-    if (this.video != null) {
-      data['video'] = this.video!.toJson();
-    }
-    return data;
-  }
-}
-
-class Video {
+class UnWatchedVideosList {
   int? id;
   int? agencyId;
   String? title;
@@ -106,7 +43,7 @@ class Video {
   String? updatedAt;
   Null? deletedAt;
 
-  Video(
+  UnWatchedVideosList(
       {this.id,
         this.agencyId,
         this.title,
@@ -122,7 +59,7 @@ class Video {
         this.updatedAt,
         this.deletedAt});
 
-  Video.fromJson(Map<String, dynamic> json) {
+  UnWatchedVideosList.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     agencyId = json['agency_id'];
     title = json['title'];

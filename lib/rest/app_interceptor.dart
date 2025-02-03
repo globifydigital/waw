@@ -23,7 +23,7 @@ class AppInterceptor extends Interceptor {
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     final status = response.statusCode;
-    if (status != null && status != 201) {
+    if (status != null && status == 401) {
       print('##onResponse: ${response.data}');
       handler.reject(DioException(
         requestOptions: response.requestOptions,

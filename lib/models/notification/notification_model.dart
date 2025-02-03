@@ -1,17 +1,17 @@
-class AllVideos {
+class NotificationModel {
   bool? success;
   String? message;
-  List<AllVideosListModel>? data;
+  List<NotificationList>? data;
 
-  AllVideos({this.success, this.message, this.data});
+  NotificationModel({this.success, this.message, this.data});
 
-  AllVideos.fromJson(Map<String, dynamic> json) {
+  NotificationModel.fromJson(Map<String, dynamic> json) {
     success = json['success'];
     message = json['message'];
     if (json['data'] != null) {
-      data = <AllVideosListModel>[];
+      data = <NotificationList>[];
       json['data'].forEach((v) {
-        data!.add(new AllVideosListModel.fromJson(v));
+        data!.add(new NotificationList.fromJson(v));
       });
     }
   }
@@ -27,50 +27,38 @@ class AllVideos {
   }
 }
 
-class AllVideosListModel {
+class NotificationList {
   int? id;
-  int? agencyId;
+  int? videoAnnouncementId;
   String? title;
-  String? video;
-  String? thumbnail;
+  String? description;
   String? date;
   String? time;
-  String? videoTimeDuration;
-  String? videoLink;
-  int? totalViews;
-  int? status;
+  String? flag;
   String? createdAt;
   String? updatedAt;
-  Null? deletedAt;
+  String? deletedAt;
 
-  AllVideosListModel(
+  NotificationList(
       {this.id,
-        this.agencyId,
+        this.videoAnnouncementId,
         this.title,
-        this.video,
-        this.thumbnail,
+        this.description,
         this.date,
         this.time,
-        this.videoTimeDuration,
-        this.videoLink,
-        this.totalViews,
-        this.status,
+        this.flag,
         this.createdAt,
         this.updatedAt,
         this.deletedAt});
 
-  AllVideosListModel.fromJson(Map<String, dynamic> json) {
+  NotificationList.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    agencyId = json['agency_id'];
+    videoAnnouncementId = json['video_announcement_id'];
     title = json['title'];
-    video = json['video'];
-    thumbnail = json['thumbnail'];
+    description = json['description'];
     date = json['date'];
     time = json['time'];
-    videoTimeDuration = json['video_time_duration'];
-    videoLink = json['video_link'];
-    totalViews = json['total_views'];
-    status = json['status'];
+    flag = json['flag'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
     deletedAt = json['deleted_at'];
@@ -79,16 +67,12 @@ class AllVideosListModel {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['id'] = this.id;
-    data['agency_id'] = this.agencyId;
+    data['video_announcement_id'] = this.videoAnnouncementId;
     data['title'] = this.title;
-    data['video'] = this.video;
-    data['thumbnail'] = this.thumbnail;
+    data['description'] = this.description;
     data['date'] = this.date;
     data['time'] = this.time;
-    data['video_time_duration'] = this.videoTimeDuration;
-    data['video_link'] = this.videoLink;
-    data['total_views'] = this.totalViews;
-    data['status'] = this.status;
+    data['flag'] = this.flag;
     data['created_at'] = this.createdAt;
     data['updated_at'] = this.updatedAt;
     data['deleted_at'] = this.deletedAt;
