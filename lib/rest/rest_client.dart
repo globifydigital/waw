@@ -10,6 +10,9 @@ part 'rest_client.g.dart';
 abstract class RestClient {
   factory RestClient(Dio dio, {required String baseUrl}) = _RestClient;
 
+  @POST('/update-device-token')
+  Future<dynamic> updateDeviceNotificationValue(@Body() Map<String, dynamic> body);
+
   @POST('/user-registration')
   Future<dynamic> userLogin(@Body() Map<String, dynamic> body);
 

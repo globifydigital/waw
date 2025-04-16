@@ -13,12 +13,22 @@ import 'api/firebase_api.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+
+  try {
+    await Firebase.initializeApp();
+    print("🔥 Firebase initialized successfully!");
+  } catch (e, stackTrace) {
+    print("❌ Firebase initialization error: $e");
+    print(stackTrace);
+  }
+
   await HiveRepo.initialize('waw');
   await FirebaseApi().initNotifications();
+
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
+
   runApp(const ProviderScope(child: MyApp()));
 }
 

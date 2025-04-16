@@ -46,4 +46,24 @@ class NotificationProvider extends ChangeNotifier {
       return NotificationModel(data: []);
     }
   }
+
+  Future<void> updateNotificationValue(String device_id, String token) async {
+    try {
+      final map = {
+        "device_id" : device_id,
+        "token" : token,
+      };
+      final response = await _restClient.updateDeviceNotificationValue(map);
+      if (kDebugMode) {
+        print("API Response: $response");
+      }
+
+    } catch (e, stackTrace) {
+      // Log the error details
+      if (kDebugMode) {
+        print("Error occurred: $e");
+        print("StackTrace: $stackTrace");
+      }
+    }
+  }
 }
